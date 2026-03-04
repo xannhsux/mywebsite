@@ -1,0 +1,94 @@
+/* ============================================
+   PINNED REPO CARD — GitHub-style
+   ============================================ */
+
+.pinned-card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-card-bg);
+  text-align: left;
+  cursor: pointer;
+  transition: box-shadow var(--duration-hover) var(--ease-default);
+  min-height: 120px;
+}
+
+.pinned-card:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.pinned-card:focus-visible {
+  outline: 2px solid var(--color-accent-navy);
+  outline-offset: 2px;
+}
+
+.pinned-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.pinned-card__name {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-body);
+  color: var(--color-accent-navy);
+}
+
+.pinned-card__badge {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 0 6px;
+  line-height: 1.6;
+}
+
+.pinned-card__description {
+  font-size: var(--fs-small);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  flex: 1;
+  margin-bottom: var(--space-sm);
+  /* Clamp to 2 lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pinned-card__footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  font-size: var(--fs-small);
+  color: var(--color-text-secondary);
+}
+
+.pinned-card__language {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.pinned-card__language-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  display: inline-block;
+}
+
+.pinned-card__stars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.pinned-card__stars svg {
+  width: 14px;
+  height: 14px;
+}

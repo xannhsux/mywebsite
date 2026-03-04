@@ -1,0 +1,81 @@
+/* ============================================
+   ANN HSU PORTFOLIO — CSS VARIABLES
+   ============================================ */
+
+:root {
+  /* ---- Colors ---- */
+  --color-bg: #FAFAFA;
+  --color-text-primary: #121212;
+  --color-text-secondary: #6E6E6E;
+  --color-accent-navy: #1B2A4A;
+  --color-border: #D0D7DE;
+  --color-border-light: #E8E8E8;
+  --color-card-bg: #FFFFFF;
+  --color-hover-bg: #F3F4F6;
+
+  /* GitHub-style grays for contribution graph */
+  --color-gh-empty: #EBEDF0;
+  --color-gh-l1: #C6C6C6;
+  --color-gh-l2: #9E9E9E;
+  --color-gh-l3: #6E6E6E;
+  --color-gh-l4: #333333;
+
+  /* ---- Typography ---- */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display',
+    'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+
+  --fw-thin: 100;
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  --fs-hero-title: clamp(3.5rem, 8vw, 7rem);
+  --fs-hero-subtitle: clamp(0.85rem, 1.2vw, 1rem);
+  --fs-section-title: clamp(1.1rem, 1.5vw, 1.25rem);
+  --fs-body: 0.875rem;
+  --fs-small: 0.75rem;
+  --fs-xs: 0.6875rem;
+
+  /* ---- Spacing ---- */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* ---- Borders ---- */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+
+  /* ---- Animations ---- */
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
+  --duration-hover: 200ms;
+  --duration-reveal: 600ms;
+  --duration-slow: 800ms;
+
+  /* ---- Shadows ---- */
+  --shadow-photo: 0 2px 8px rgba(0, 0, 0, 0.12);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 2px 6px rgba(0, 0, 0, 0.08);
+
+  /* ---- Layout ---- */
+  --gh-sidebar-width: 296px;
+  --gh-content-max: 1280px;
+}
+
+/* Reduced-motion: disable all custom animations */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-hover: 0ms;
+    --duration-reveal: 0ms;
+    --duration-slow: 0ms;
+  }
+}
