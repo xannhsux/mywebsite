@@ -17,6 +17,7 @@
 
 .pinned-card:hover {
   box-shadow: var(--shadow-card-hover);
+  border-color: var(--color-accent-navy);
 }
 
 .pinned-card:focus-visible {

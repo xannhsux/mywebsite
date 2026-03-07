@@ -1,6 +1,5 @@
 /* ============================================
    SECTION C — GITHUB PROFILE
-   Faithful recreation of GitHub desktop layout
    ============================================ */
 
 .gh-profile {
@@ -56,7 +55,7 @@
 }
 
 .gh-sidebar__info {
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-sm);
 }
 
 .gh-sidebar__name {
@@ -67,51 +66,55 @@
   line-height: 1.25;
 }
 
-.gh-sidebar__username {
-  font-family: var(--font-sans);
-  font-weight: var(--fw-light);
-  font-size: 1.25rem;
-  color: var(--color-text-secondary);
-  line-height: 1.5;
-}
-
 .gh-sidebar__bio {
   font-family: var(--font-sans);
   font-size: var(--fs-body);
   color: var(--color-text-primary);
-  margin-top: var(--space-sm);
+  margin-top: var(--space-xs);
 }
 
-.gh-sidebar__follow-btn {
-  width: 100%;
-  padding: 5px 16px;
-  font-size: var(--fs-body);
-  font-weight: var(--fw-medium);
-  color: var(--color-text-primary);
-  background: var(--color-card-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+/* ---- Divider under name ---- */
+
+.gh-sidebar__divider {
+  border: none;
+  border-top: 1px solid var(--color-border-light);
+  margin: var(--space-md) 0;
+}
+
+/* ---- Organizations (in sidebar) ---- */
+
+.gh-sidebar__orgs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
   margin-bottom: var(--space-md);
-  transition: background var(--duration-hover) var(--ease-default);
 }
 
-.gh-sidebar__follow-btn:hover {
-  background: var(--color-hover-bg);
-}
-
-.gh-sidebar__stats {
+.gh-orgs__item {
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
-  font-size: var(--fs-body);
-  color: var(--color-text-secondary);
-  margin-bottom: var(--space-md);
+  gap: var(--space-sm);
 }
 
-.gh-sidebar__stats strong {
-  color: var(--color-text-primary);
-  font-weight: var(--fw-semibold);
+.gh-orgs__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  flex-shrink: 0;
 }
+
+.gh-orgs__name {
+  font-size: var(--fs-body);
+  color: var(--color-text-primary);
+}
+
+/* ---- Sidebar links ---- */
 
 .gh-sidebar__links {
   list-style: none;
@@ -198,85 +201,6 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-md);
-}
-
-/* ---- Activity ---- */
-
-.gh-activity {
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.gh-activity__item {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
-  border-bottom: 1px solid var(--color-border-light);
-}
-
-.gh-activity__item:last-child {
-  border-bottom: none;
-}
-
-.gh-activity__icon {
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.gh-activity__content {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-xs);
-  font-size: var(--fs-body);
-}
-
-.gh-activity__repo {
-  font-weight: var(--fw-semibold);
-  color: var(--color-text-primary);
-}
-
-.gh-activity__message {
-  color: var(--color-text-secondary);
-}
-
-.gh-activity__time {
-  color: var(--color-text-secondary);
-  font-size: var(--fs-small);
-}
-
-/* ---- Organizations ---- */
-
-.gh-orgs {
-  display: flex;
-  gap: var(--space-md);
-  flex-wrap: wrap;
-}
-
-.gh-orgs__item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-}
-
-.gh-orgs__avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-bold);
-  flex-shrink: 0;
-}
-
-.gh-orgs__name {
-  font-size: var(--fs-body);
-  color: var(--color-text-primary);
 }
 
 /* ============================================

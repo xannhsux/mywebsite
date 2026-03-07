@@ -29,12 +29,14 @@ import './IntellectualTrajectory.css';
  */
 
 const MILESTONES = [
-  { threshold: 0.12, label: '2001 · born in Taipei' },
-  { threshold: 0.28, label: '2008 · 1st grade · Shanghai' },
-  { threshold: 0.44, label: '2020 · high school graduated · Shanghai' },
-  { threshold: 0.60, label: '2020 · BSc Computer Science · King\'s College London' },
-  { threshold: 0.76, label: '2023 · SWE · Applied Materials · Shanghai' },
-  { threshold: 0.92, label: '2024 · MS Data Science · USC · Los Angeles' },
+  { threshold: 0.12, label: '2001 OCT. born | Taipei' },
+  { threshold: 0.16, label: '2004 SEP. Piano | Shanghai' },
+  { threshold: 0.28, label: '2008 SEP. The SMIC Private School | Shanghai' },
+  { threshold: 0.35, label: '2010 SEP. Flute & Orchestra | Shanghai' },
+  { threshold: 0.55, label: '2019 DEC. 1st Personal Charity Concert | Shanghai' },
+  { threshold: 0.60, label: '2020 SEP. BS Computer Science @ KCL | London' },
+  { threshold: 0.76, label: '2023 SEP. SWE @ Applied Materials | Shanghai' },
+  { threshold: 0.92, label: '2024 SEP. MS Data Science @ USC | Los Angeles' },
 ];
 
 const SECTION_HEIGHT = 2400;     // px — total scroll height (tune this to control pacing)
@@ -177,11 +179,11 @@ export default function IntellectualTrajectory() {
         {/* Airplane — transform: translateY bound to scroll, no transition */}
         <div
           ref={airplaneRef}
-          id="airplane"
+          id="airplaneContainer"
           className="trajectory__airplane"
           aria-hidden="true"
         >
-          <AirplaneSVG />
+          <AirplaneSVG size={48} />
         </div>
 
         {/* Milestone nodes — branch out from the vertical path */}
@@ -211,7 +213,7 @@ export default function IntellectualTrajectory() {
                   y1="1"
                   x2={side === 'right' ? BRANCH_LENGTH : 0}
                   y2="1"
-                  stroke="var(--color-text-secondary)"
+                  stroke="var(--color-accent-navy)"
                   strokeWidth="1"
                   strokeDasharray={BRANCH_LENGTH}
                   strokeDashoffset={BRANCH_LENGTH}

@@ -57,16 +57,13 @@
 }
 
 /* ---- Airplane ----
-   position: absolute inside the sticky container.
-   Moved via transform: translateY — no CSS transition, no top animation.
-   Stays visible because the sticky container is pinned to the viewport. */
+   container pinned at top and centered; the image inside is rotated.
+   JavaScript still mutates the container's translateY for the scroll effect.
+   (Keeping the class for legacy selectors, but position/transform come from
+   the ID selector below so we don't accidentally override the fixed rules.) */
 
 .trajectory__airplane {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%) translateY(0);
-  z-index: 3;
+  /* no positioning here; #airplaneContainer handles the layout */
   will-change: transform;
 }
 
@@ -97,7 +94,7 @@
   width: 8px;
   height: 8px;
   border-radius: var(--radius-full);
-  background: var(--color-text-primary);
+  background: var(--color-accent-navy);
   flex-shrink: 0;
   opacity: 0;
   transform: scale(0.5);
@@ -114,6 +111,18 @@
 
 .trajectory__node-branch line {
   opacity: 0;
+}
+
+/* ---- Airplane container (absolute inside sticky) ---- */
+
+#airplaneContainer {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  z-index: 3;
+  pointer-events: none;
+  /* vertical motion comes from script changing translateY */
 }
 
 /* ---- Node label ---- */
@@ -150,7 +159,7 @@
   font-family: var(--font-sans);
   font-weight: var(--fw-light);
   font-size: 1.1rem;
-  color: var(--color-text-secondary);
+  color: var(--color-accent-navy);
   font-style: italic;
   letter-spacing: 0.04em;
 }

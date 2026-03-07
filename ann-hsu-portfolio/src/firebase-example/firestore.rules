@@ -1,0 +1,33 @@
+// Firestore Security Rules for hi-counts
+//
+// Strategy:
+//   - Anyone can read hi-counts (public heatmap)
+//   - Writes only allowed via Cloud Function (see below)
+//   - Direct client writes are DENIED to prevent abuse
+//
+// If you want to allow direct client writes with rate limiting,
+// use the alternative rules below.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Hi-counts: public read, no direct write
+    match /hi-counts/{dateKey} {
+      allow read: if true;
+      allow write: if false; // writes go through Cloud Function
+    }
+
+    // --- ALTERNATIVE: Direct client writes with basic validation ---
+    // Uncomment this block and comment the above if not using Cloud Functions.
+    //
+    // match /hi-counts/{dateKey} {
+    //   allow read: if true;
+    //   allow write: if
+    //     // Only allow merge-increment (not overwrite)
+    //     request.resource.data.count == resource.data.count + 1
+    //     // dateKey must be today's date
+    //     && dateKey == request.time.toMillis().date().format('YYYY-MM-DD');
+    // }
+  }
+}

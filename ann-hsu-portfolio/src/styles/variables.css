@@ -4,10 +4,10 @@
 
 :root {
   /* ---- Colors ---- */
-  --color-bg: #FAFAFA;
+  --color-bg: #F7F4F1;
   --color-text-primary: #121212;
   --color-text-secondary: #6E6E6E;
-  --color-accent-navy: #1B2A4A;
+  --color-accent-navy: #1F2A44;
   --color-border: #D0D7DE;
   --color-border-light: #E8E8E8;
   --color-card-bg: #FFFFFF;
@@ -19,6 +19,12 @@
   --color-gh-l2: #9E9E9E;
   --color-gh-l3: #6E6E6E;
   --color-gh-l4: #333333;
+
+  /* Hi-count heatmap: empty → deep navy */
+  --color-hi-l1: #C8CDDA;
+  --color-hi-l2: #8E99B4;
+  --color-hi-l3: #4F5D7E;
+  --color-hi-l4: #1F2A44;
 
   /* ---- Typography ---- */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display',
