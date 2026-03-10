@@ -26,7 +26,7 @@ export default function LandingPage({ onEnter }) {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="EMAIL"
                     autoFocus
-                    className="w-full px-8 py-3 text-[11px] tracking-[0.3em] text-center transition-all bg-[#F2F2F7] rounded-full border-none outline-none focus:bg-[#E5E5EA] placeholder-gray-400 text-black uppercase"
+                    className="w-full px-8 py-3.5 text-[11px] tracking-[0.3em] text-center transition-all bg-[#F0F0F5] border border-gray-100/50 rounded-full shadow-sm outline-none focus:bg-white focus:shadow-md focus:border-navy-light/10 placeholder-gray-400 text-black uppercase"
                 />
 
                 {email.includes('@') && (

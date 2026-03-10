@@ -34,7 +34,6 @@ export default function ProjectCard({ project, position, stage }) {
                     fontSize={0.035}
                     color="#999"
                     anchorX="center"
-                    font="/fonts/Montserrat-Regular.ttf"
                 >
                     {project.category}
                 </Text>
@@ -44,7 +43,6 @@ export default function ProjectCard({ project, position, stage }) {
                     fontSize={0.07}
                     color="black"
                     anchorX="center"
-                    font="/fonts/Montserrat-Medium.ttf"
                 >
                     {project.title}
                 </Text>
