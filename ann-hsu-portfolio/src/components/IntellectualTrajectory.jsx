@@ -30,10 +30,7 @@ import './IntellectualTrajectory.css';
 
 const MILESTONES = [
   { threshold: 0.12, label: '2001 OCT. born | Taipei' },
-  { threshold: 0.16, label: '2004 SEP. Piano | Shanghai' },
-  { threshold: 0.28, label: '2008 SEP. The SMIC Private School | Shanghai' },
-  { threshold: 0.35, label: '2010 SEP. Flute & Orchestra | Shanghai' },
-  { threshold: 0.55, label: '2019 DEC. 1st Personal Charity Concert | Shanghai' },
+  { threshold: 0.28, label: '2008 SEP. The SMIC Private School | Shanghai' }, { threshold: 0.55, label: '2019 DEC. 1st Personal Charity Concert | Shanghai' },
   { threshold: 0.60, label: '2020 SEP. BS Computer Science @ KCL | London' },
   { threshold: 0.76, label: '2023 SEP. SWE @ Applied Materials | Shanghai' },
   { threshold: 0.92, label: '2024 SEP. MS Data Science @ USC | Los Angeles' },
