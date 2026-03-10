@@ -1,35 +1,23 @@
-import { useRef, useMemo, useState } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
-import {
-    PresentationControls,
-    ContactShadows,
-    Environment,
-    Float,
-    Text,
-    Html
-} from '@react-three/drei';
+import { useMemo, useRef } from 'react';
+import { useThree, useFrame } from '@react-three/fiber';
+import { PresentationControls, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
-import Sphere from './Sphere';
 import ProjectCard from './ProjectCard';
 
+// Dummy Project Data
 const PROJECTS = Array.from({ length: 24 }, (_, i) => ({
     id: i,
-    title: [
-        'Fashion AI', 'Retrieval Engine', 'GeoData Vis', 'Stock Analytics',
-        'Travel LLM', 'NFC iOS App', 'Kidney CT Study', 'Wellness App',
-        'Deep Search', 'Vision Lab', 'Neural Flow', 'Aero Logic'
-    ][i % 12],
-    category: ['ML', 'Engineering', 'Frontend', 'Software'][i % 4],
-    meta: '2022-2024'
+    title: ['Neural Flow', 'Aero Logic', 'Aether UI', 'Vision Lab', 'Cipher Core', 'Genesis ML'][i % 6],
+    category: i % 2 === 0 ? 'Engineering' : 'Frontend Architecture',
 }));
 
 export default function Experience({ stage }) {
     const { viewport } = useThree();
-    const groupRef = useRef();
 
-    // Fibonacci Sphere Distribution Logic
+    // CORE TASK: Fibonacci Sphere Algorithm
+    // Distributes points equidistant on a sphere's surface
     const positions = useMemo(() => {
-        const radius = 3.8; // Larger radius for more density
+        const radius = 4; // Sphere radius
         const phi = Math.PI * (3 - Math.sqrt(5)); // Golden angle
         const n = PROJECTS.length;
 
@@ -41,28 +29,28 @@ export default function Experience({ stage }) {
             const x = Math.cos(theta) * r;
             const z = Math.sin(theta) * r;
 
+            // Returns the position vectors relative to the center
             return new THREE.Vector3(x * radius, y * radius, z * radius);
         });
     }, []);
 
     return (
         <>
-            <ambientLight intensity={0.8} />
-            <directionalLight position={[10, 10, 5]} intensity={1} />
+            <ambientLight intensity={1} />
+            <directionalLight position={[10, 10, 5]} intensity={1.5} />
             <Environment preset="studio" />
 
+            {/* CORE TASK: Damping / Smooth Interaction Controller */}
             <PresentationControls
                 global
-                config={{ mass: 3, tension: 200 }}
-                snap={{ mass: 4, tension: 150 }}
-                rotation={[0.2, 0, 0]}
+                config={{ mass: 3, tension: 150, friction: 50 }} // Smooth physical inertia
+                snap={{ mass: 4, tension: 100, friction: 30 }}  // Snap back loosely
+                rotation={[0.1, 0, 0]}
                 polar={[-Math.PI / 3, Math.PI / 3]}
                 azimuth={[-Math.PI, Math.PI]}
             >
-                <group ref={groupRef}>
-                    <Sphere />
-
-                    {/* Project List Arrangement */}
+                <group position={[0, 0, 0]}>
+                    {/* Mapping Cards into the sphere */}
                     {PROJECTS.map((project, i) => (
                         <ProjectCard
                             key={project.id}
@@ -73,6 +61,9 @@ export default function Experience({ stage }) {
                     ))}
                 </group>
             </PresentationControls>
+
+            {/* Surface floor for visual grounding */}
+            {stage !== 'landing' && <ContactShadows position={[0, -5, 0]} opacity={0.25} scale={20} blur={3} far={10} />}
         </>
     );
 }

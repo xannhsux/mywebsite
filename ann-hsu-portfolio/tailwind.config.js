@@ -8,15 +8,14 @@ export default {
         extend: {
             colors: {
                 navy: {
-                    light: '#1B2A4E',
+                    light: '#003366',
                     DEFAULT: '#002147',
-                    dark: '#050A14',
+                    dark: '#001A3A',
                 },
             },
             fontFamily: {
-                sans: ['Montserrat', 'sans-serif'],
-                serif: ['Cormorant Garamond', 'serif'],
-                script: ['Ma Shan Zheng', 'cursive'],
+                heading: ['Inter', 'system-ui', 'sans-serif'],
+                mono: ['JetBrains Mono', 'monospace'],
             },
         },
     },

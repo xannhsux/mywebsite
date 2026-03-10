@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 
 export default function LandingPage({ onEnter }) {
     const [email, setEmail] = useState('');
@@ -16,7 +16,7 @@ export default function LandingPage({ onEnter }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 1.1, filter: 'blur(30px)' }}
-            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 1, ease: 'circOut' }}
             className="flex flex-col items-center justify-center w-full h-full bg-white pointer-events-auto"
         >
             <form onSubmit={handleSubmit} className="relative w-full max-w-[320px]">
@@ -24,9 +24,9 @@ export default function LandingPage({ onEnter }) {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="EMAIL"
+                    placeholder="EMAIL ADDRESS"
                     autoFocus
-                    className="w-full px-8 py-3.5 text-[11px] tracking-[0.3em] text-center transition-all bg-[#F0F0F5] border border-gray-100/50 rounded-full shadow-sm outline-none focus:bg-white focus:shadow-md focus:border-navy-light/10 placeholder-gray-400 text-black uppercase"
+                    className="w-full px-8 py-3.5 text-[10px] tracking-[0.4em] text-center transition-all bg-gray-50 border border-gray-100 rounded-full shadow-sm outline-none focus:bg-white focus:shadow-md focus:border-navy-light/10 placeholder-gray-400 text-black font-semibold"
                 />
 
                 {email.includes('@') && (
@@ -37,17 +37,13 @@ export default function LandingPage({ onEnter }) {
                     >
                         <button
                             type="submit"
-                            className="text-[9px] tracking-[0.4em] text-gray-400 hover:text-navy transition-colors"
+                            className="text-[9px] tracking-[0.6em] text-gray-400 hover:text-navy uppercase transition-all hover:tracking-[0.8em]"
                         >
-                            PRESS ENTER TO START
+                            PRESS [ENTER] TO ENTER
                         </button>
                     </motion.div>
                 )}
             </form>
-
-            <div className="absolute bottom-12 text-[10px] tracking-[0.4em] text-gray-200">
-                ANN HSU &copy; 2026
-            </div>
         </motion.div>
     );
 }

@@ -1,27 +1,39 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 @layer base {
-  body {
-    @apply bg-white text-black antialiased;
-    font-family: 'Montserrat', sans-serif;
-  }
+    body {
+        @apply bg-white text-black antialiased overflow-hidden;
+        font-family: 'Inter', sans-serif;
+    }
+}
+
+/* Force full height of HTML to avoid scrolling during 3D phase */
+html,
+body,
+#root {
+    height: 100%;
 }
 
 /* Custom transitions and scrollbar */
 ::selection {
-  @apply bg-navy-light/20 text-navy;
+    background-color: rgba(0, 33, 71, 0.1);
+    /* Navy highlight */
+    color: #002147;
 }
 
 ::-webkit-scrollbar {
-  width: 4px;
+    width: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-transparent;
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-navy/20 transition-colors hover:bg-navy/40;
+    background: rgba(0, 33, 71, 0.2);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 33, 71, 0.4);
 }
