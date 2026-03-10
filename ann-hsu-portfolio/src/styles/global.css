@@ -1,68 +1,27 @@
-/* ============================================
-   GLOBAL RESET & BASE STYLES
-   ============================================ */
-@import './variables.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-size: 16px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
+@layer base {
+  body {
+    @apply bg-white text-black antialiased;
+    font-family: 'Montserrat', sans-serif;
   }
 }
 
-body {
-  font-family: var(--font-sans);
-  font-weight: var(--fw-regular);
-  color: var(--color-text-primary);
-  background-color: var(--color-bg);
-  line-height: 1.5;
-  overflow-x: clip; /* clip instead of hidden — prevents sticky breakage */
+/* Custom transitions and scrollbar */
+::selection {
+  @apply bg-navy-light/20 text-navy;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+::-webkit-scrollbar {
+  width: 4px;
 }
 
-button {
-  font-family: inherit;
-  cursor: pointer;
-  border: none;
-  background: none;
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
 }
 
-img {
-  display: block;
-  max-width: 100%;
-}
-
-code, pre {
-  font-family: var(--font-mono);
-}
-
-/* Utility: screen-reader only */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+::-webkit-scrollbar-thumb {
+  @apply bg-navy/20 transition-colors hover:bg-navy/40;
 }
