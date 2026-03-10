@@ -56,14 +56,14 @@
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background: var(--color-accent);
+    background: #1B2A4E;
     z-index: 1001;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    box-shadow: 0 10px 30px rgba(226, 111, 69, 0.4);
+    box-shadow: 0 10px 30px rgba(27, 42, 78, 0.4);
     cursor: pointer;
 }
 
