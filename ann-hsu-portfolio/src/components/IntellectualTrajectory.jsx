@@ -213,7 +213,7 @@ export default function IntellectualTrajectory() {
                   y1="1"
                   x2={side === 'right' ? BRANCH_LENGTH : 0}
                   y2="1"
-                  stroke="var(--color-accent-navy)"
+                  stroke="var(--color-accent)"
                   strokeWidth="1"
                   strokeDasharray={BRANCH_LENGTH}
                   strokeDashoffset={BRANCH_LENGTH}

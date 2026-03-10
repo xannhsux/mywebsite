@@ -3,32 +3,30 @@
    ============================================ */
 
 :root {
-  /* ---- Colors ---- */
-  --color-bg: #F7F4F1;
-  --color-text-primary: #121212;
+  /* ---- Colors (Michael Li inspired) ---- */
+  --color-bg: #F8F8F8;
+  --color-bg-dark: #111111;
+  --color-text-primary: #111111;
   --color-text-secondary: #6E6E6E;
-  --color-accent-navy: #1F2A44;
-  --color-border: #D0D7DE;
-  --color-border-light: #E8E8E8;
+  --color-accent: #E26F45;
+  /* Michael's Orange */
+  --color-border: #E8E8E8;
+  --color-border-dark: rgba(255, 255, 255, 0.1);
   --color-card-bg: #FFFFFF;
   --color-hover-bg: #F3F4F6;
 
-  /* GitHub-style grays for contribution graph */
+  /* GitHub-style grays for contribution graph (keeping these) */
   --color-gh-empty: #EBEDF0;
   --color-gh-l1: #C6C6C6;
   --color-gh-l2: #9E9E9E;
   --color-gh-l3: #6E6E6E;
   --color-gh-l4: #333333;
 
-  /* Hi-count heatmap: empty → deep navy */
-  --color-hi-l1: #C8CDDA;
-  --color-hi-l2: #8E99B4;
-  --color-hi-l3: #4F5D7E;
-  --color-hi-l4: #1F2A44;
-
   /* ---- Typography ---- */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display',
+  --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, 'SF Pro Display',
     'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Cormorant Garamond', serif;
+  --font-script: 'Ma Shan Zheng', cursive;
   --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
 
   --fw-thin: 100;
