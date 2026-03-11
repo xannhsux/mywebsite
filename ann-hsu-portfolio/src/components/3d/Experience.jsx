@@ -5,11 +5,50 @@ import * as THREE from 'three';
 import ProjectCard from './ProjectCard';
 import InfinityAnchor from './InfinityAnchor';
 
-// ── Project data ──
-const PROJECTS = Array.from({ length: 120 }, (_, i) => ({
+// ── Rich project data ──
+const PROJECTS = [
+    {
+        id: 0, title: 'Aero Logic', category: 'SYSTEMS',
+        desc: 'A distributed flight control system built with Rust and real-time telemetry. Handles concurrent sensor data streams with sub-millisecond latency.',
+        achievement: 'Reduced telemetry latency by 94%, handling 12K concurrent sensor feeds in production.',
+        tech: ['Rust', 'gRPC', 'Redis', 'Docker'],
+    },
+    {
+        id: 1, title: 'Cipher Core', category: 'DATA SCIENCE',
+        desc: 'End-to-end encrypted data pipeline for sensitive financial analytics. Features zero-knowledge proofs and homomorphic encryption.',
+        achievement: 'Processed $2.8B in encrypted financial transactions with zero data breaches.',
+        tech: ['Python', 'PySpark', 'AWS', 'Crypto'],
+    },
+    {
+        id: 2, title: 'Genesis ML', category: 'DESIGN SYSTEM',
+        desc: 'A machine learning framework with visual model builder. Drag-and-drop neural network architecture design with real-time training visualization.',
+        achievement: 'Used by 1,200+ researchers. Cut model prototyping time by 60%.',
+        tech: ['PyTorch', 'React', 'D3.js', 'WebGL'],
+    },
+    {
+        id: 3, title: 'Vision Lab', category: 'AI LAB',
+        desc: 'Computer vision platform for real-time object detection and scene understanding. Processes 60fps video feeds with custom YOLO variants.',
+        achievement: 'Achieved 97.2% mAP on custom benchmarks at 60fps inference speed.',
+        tech: ['OpenCV', 'TensorRT', 'CUDA', 'FastAPI'],
+    },
+    {
+        id: 4, title: 'Neural Flow', category: 'SYSTEMS',
+        desc: 'Interactive 3D neural network visualizer. Explore model architectures, watch activations propagate, and debug training in real time.',
+        achievement: 'Featured in TensorFlow Dev Summit. 3K+ GitHub stars.',
+        tech: ['Three.js', 'TF.js', 'WebGL', 'WASM'],
+    },
+    {
+        id: 5, title: 'Aether UI', category: 'DATA SCIENCE',
+        desc: 'Open-source design system with 40+ accessible components. Features glassmorphism, fluid animations, and full dark mode support.',
+        achievement: 'Adopted by 200+ teams. 98/100 Lighthouse accessibility score.',
+        tech: ['React', 'Storybook', 'CSS', 'A11y'],
+    },
+];
+
+// Build 120 cards from the 6 projects
+const ALL_PROJECTS = Array.from({ length: 120 }, (_, i) => ({
+    ...PROJECTS[i % PROJECTS.length],
     id: i,
-    title: ['Aero Logic', 'Cipher Core', 'Genesis ML', 'Vision Lab', 'Neural Flow', 'Aether UI'][i % 6],
-    category: ['SYSTEMS', 'DATA SCIENCE', 'DESIGN SYSTEM', 'AI LAB'][i % 4],
 }));
 
 // ── Fibonacci sphere distribution with inner‑radius gap ──
@@ -36,9 +75,9 @@ export default function Experience({ stage, selectedProject, onSelect, onTransit
     const radius = 14;
 
     const items = useMemo(() => {
-        const positions = fibonacciSphere(PROJECTS.length, radius, 0.5);
+        const positions = fibonacciSphere(ALL_PROJECTS.length, radius, 0.5);
         return positions.map((pos, idx) => ({
-            ...PROJECTS[idx % PROJECTS.length],
+            ...ALL_PROJECTS[idx % ALL_PROJECTS.length],
             id: idx,
             pos,
         }));
@@ -54,13 +93,20 @@ export default function Experience({ stage, selectedProject, onSelect, onTransit
         camera.lookAt(0, 0, 0);
     }, [camera]);
 
-    // ── Auto‑drift + lookAt ──
+    // ── Auto-drift (pauses when card focused) + lookAt ──
     useFrame(() => {
         if (worldGroupRef.current && selectedProject === null) {
             worldGroupRef.current.rotation.y += 0.0003;
         }
         camera.lookAt(0, 0, 0);
     });
+
+    // ── Disable orbit when focused ──
+    useEffect(() => {
+        if (controlsRef.current) {
+            controlsRef.current.enabled = selectedProject === null;
+        }
+    }, [selectedProject]);
 
     // ── Scroll‑driven About transition ──
     useEffect(() => {
@@ -90,6 +136,11 @@ export default function Experience({ stage, selectedProject, onSelect, onTransit
         return () => window.removeEventListener('wheel', onWheel);
     }, [stage, selectedProject, camera, onTransitionToAbout]);
 
+    // ── Click empty space → deselect ──
+    const handleMiss = useCallback(() => {
+        if (selectedProject !== null) onSelect(null);
+    }, [selectedProject, onSelect]);
+
     return (
         <>
             <ambientLight intensity={2.2} />
@@ -107,11 +158,9 @@ export default function Experience({ stage, selectedProject, onSelect, onTransit
                 rotateSpeed={0.5}
             />
 
-            {stage !== 'landing' && stage !== 'about' && (
-                <InfinityAnchor />
-            )}
+            {stage !== 'landing' && stage !== 'about' && <InfinityAnchor />}
 
-            <group ref={worldGroupRef} position={[0, 0, 0]}>
+            <group ref={worldGroupRef} onPointerMissed={handleMiss}>
                 {items.map((item) => (
                     <ProjectCard
                         key={item.id}
@@ -119,7 +168,7 @@ export default function Experience({ stage, selectedProject, onSelect, onTransit
                         position={item.pos}
                         isFocused={selectedProject === item.id}
                         anyFocused={selectedProject !== null}
-                        onSelect={() => onSelect(item.id)}
+                        onSelect={() => onSelect(selectedProject === item.id ? null : item.id)}
                     />
                 ))}
             </group>

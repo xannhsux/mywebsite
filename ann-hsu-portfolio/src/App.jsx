@@ -1,73 +1,29 @@
-import { useState, Suspense, useEffect, useRef, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Canvas } from '@react-three/fiber';
 import LandingPage from './components/ui/LandingPage';
-import Experience from './components/3d/Experience';
+import ThreeCanvas from './components/3d/ThreeCanvas';
 import AboutPlaceholder from './components/ui/AboutPlaceholder';
-
-// ── Project detail data (matches IDs in Experience) ──
-const PROJECT_DETAILS = {
-    0: { category: 'SYSTEMS', title: 'Aero Logic', desc: 'A distributed flight control system built with Rust and real-time telemetry. Handles concurrent sensor data streams with sub-millisecond latency.', tech: ['Rust', 'gRPC', 'Redis', 'Docker'] },
-    1: { category: 'DATA SCIENCE', title: 'Cipher Core', desc: 'End-to-end encrypted data pipeline for sensitive financial analytics. Features zero-knowledge proofs and homomorphic encryption.', tech: ['Python', 'PySpark', 'AWS', 'Crypto'] },
-    2: { category: 'DESIGN SYSTEM', title: 'Genesis ML', desc: 'A machine learning framework with visual model builder. Drag-and-drop neural network architecture design with real-time training visualization.', tech: ['PyTorch', 'React', 'D3.js', 'WebGL'] },
-    3: { category: 'AI LAB', title: 'Vision Lab', desc: 'Computer vision platform for real-time object detection and scene understanding. Processes 60fps video feeds with custom YOLO variants.', tech: ['OpenCV', 'TensorRT', 'CUDA', 'FastAPI'] },
-    4: { category: 'SYSTEMS', title: 'Neural Flow', desc: 'Interactive 3D neural network visualizer. Explore model architectures, watch activations propagate, and debug training in real time.', tech: ['Three.js', 'TensorFlow.js', 'WebGL'] },
-    5: { category: 'DATA SCIENCE', title: 'Aether UI', desc: 'Open-source design system with 40+ accessible components. Features glassmorphism, fluid animations, and full dark mode support.', tech: ['React', 'Storybook', 'CSS', 'A11y'] },
-};
-
-function getProjectDetail(id) {
-    const key = id % 6;
-    return PROJECT_DETAILS[key] || PROJECT_DETAILS[0];
-}
 
 export default function App() {
     const [stage, setStage] = useState('landing');
     const [selectedProject, setSelectedProject] = useState(null);
-    const sceneContainerRef = useRef();
 
     const handleTransitionToAbout = useCallback(() => {
         setStage('about');
     }, []);
 
-    useEffect(() => {
-        if (stage === 'journey' && sceneContainerRef.current) {
-            sceneContainerRef.current.style.opacity = '1';
-            sceneContainerRef.current.style.transform = 'none';
-        }
-    }, [stage]);
-
-    const detail = selectedProject !== null ? getProjectDetail(selectedProject) : null;
+    const handleCardSelect = useCallback((project) => {
+        setSelectedProject(project);
+    }, []);
 
     return (
         <main className="fixed inset-0 w-full h-full bg-[#FFFFFF] select-none overflow-hidden font-sans">
-            {/* ── 3D Scene ── */}
-            <div
-                ref={sceneContainerRef}
-                className={`absolute inset-0 z-0 transition-all duration-700 ${stage === 'landing'
-                    ? 'blur-2xl scale-105 opacity-30'
-                    : 'opacity-100'
-                    }`}
-            >
-                <Canvas
-                    camera={{
-                        position: [0, 0, 0.1],
-                        fov: 78, near: 0.1, far: 200,
-                    }}
-                    style={{ touchAction: 'none', width: '100%', height: '100%' }}
-                    gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-                    dpr={[1, 2]}
-                >
-                    <color attach="background" args={['#FFFFFF']} />
-                    <Suspense fallback={null}>
-                        <Experience
-                            stage={stage}
-                            selectedProject={selectedProject}
-                            onSelect={setSelectedProject}
-                            onTransitionToAbout={handleTransitionToAbout}
-                        />
-                    </Suspense>
-                </Canvas>
-            </div>
+            {/* ── Pure WebGL 3D Scene ── */}
+            <ThreeCanvas
+                stage={stage}
+                onCardSelect={handleCardSelect}
+                onScrollAbout={handleTransitionToAbout}
+            />
 
             {/* ── Landing / About overlays ── */}
             <div className="absolute inset-0 z-20 pointer-events-none overflow-hidden">
@@ -81,98 +37,82 @@ export default function App() {
                 </AnimatePresence>
             </div>
 
-            {/* ── Project detail card (centered HTML overlay) ── */}
+            {/* ── Project detail overlay (shows on card hover) ── */}
             <AnimatePresence>
-                {detail && (
-                    <>
-                        {/* Backdrop */}
-                        <motion.div
-                            key="backdrop"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[3px]"
-                            onClick={() => setSelectedProject(null)}
-                        />
-
-                        {/* Card */}
-                        <motion.div
-                            key="detail-card"
-                            initial={{ opacity: 0, scale: 0.85, y: 30 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+                {selectedProject && (
+                    <motion.div
+                        key="detail"
+                        initial={{ opacity: 0, x: 30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                        className="fixed right-8 top-1/2 -translate-y-1/2 z-30 pointer-events-none"
+                    >
+                        <div
+                            className="
+                                w-[340px] max-w-[40vw]
+                                bg-white/95 backdrop-blur-sm
+                                rounded-2xl
+                                border border-gray-100
+                                shadow-[0_16px_60px_rgba(0,0,0,0.10)]
+                                p-8
+                            "
                         >
-                            <div
-                                className="
-                                    pointer-events-auto
-                                    w-[420px] max-w-[90vw]
-                                    bg-white
-                                    rounded-2xl
-                                    border border-gray-100
-                                    shadow-[0_20px_80px_rgba(0,0,0,0.12)]
-                                    p-10
-                                    cursor-default
-                                "
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                {/* Category */}
+                            {/* Project Name */}
+                            <h2 className="text-xl font-bold text-[#000] tracking-tight mb-3 leading-tight">
+                                {selectedProject.title}
+                            </h2>
+
+                            {/* Description */}
+                            <p className="text-[13px] leading-relaxed text-[#002147]/50 mb-5">
+                                {selectedProject.desc}
+                            </p>
+
+                            {/* Key Achievement */}
+                            <div className="mb-5">
                                 <div
-                                    className="text-[10px] tracking-[0.3em] font-bold uppercase text-[#002147] opacity-40 mb-4"
+                                    className="text-[9px] tracking-[0.2em] font-semibold uppercase text-[#002147]/35 mb-2"
                                     style={{ fontFamily: '"JetBrains Mono", monospace' }}
                                 >
-                                    {detail.category}
+                                    Key Achievement
                                 </div>
-
-                                {/* Title */}
-                                <h2 className="text-2xl font-black text-[#000] tracking-tight mb-4 leading-tight">
-                                    {detail.title}
-                                </h2>
-
-                                {/* Description */}
-                                <p className="text-sm leading-relaxed text-gray-500 mb-6">
-                                    {detail.desc}
+                                <p className="text-[13px] leading-relaxed font-medium text-[#002147]/75">
+                                    {selectedProject.achievement}
                                 </p>
+                            </div>
 
-                                {/* Tech pills */}
-                                <div className="flex flex-wrap gap-2 mb-8">
-                                    {detail.tech.map((t) => (
+                            {/* Tech Stack */}
+                            <div>
+                                <div
+                                    className="text-[9px] tracking-[0.2em] font-semibold uppercase text-[#002147]/35 mb-3"
+                                    style={{ fontFamily: '"JetBrains Mono", monospace' }}
+                                >
+                                    Tech Stack
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {selectedProject.tech.map((t) => (
                                         <span
                                             key={t}
                                             className="
                                                 text-[10px] tracking-wider font-medium uppercase
                                                 px-3 py-1.5 rounded-full
-                                                bg-[#002147]/5 text-[#002147]/60
+                                                bg-[#002147]/5 text-[#002147]/55
                                                 border border-[#002147]/8
                                             "
+                                            style={{ fontFamily: '"JetBrains Mono", monospace' }}
                                         >
                                             {t}
                                         </span>
                                     ))}
                                 </div>
-
-                                {/* Close */}
-                                <button
-                                    onClick={() => setSelectedProject(null)}
-                                    className="
-                                        text-[10px] tracking-[0.3em] uppercase font-bold
-                                        text-gray-400 hover:text-[#002147]
-                                        transition-colors duration-200
-                                    "
-                                    style={{ fontFamily: '"JetBrains Mono", monospace' }}
-                                >
-                                    ← Close
-                                </button>
                             </div>
-                        </motion.div>
-                    </>
+                        </div>
+                    </motion.div>
                 )}
             </AnimatePresence>
 
             {/* ── Bottom "About Ann" tab ── */}
-            {stage === 'journey' && selectedProject === null && (
+            {stage === 'journey' && !selectedProject && (
                 <motion.div
                     initial={{ y: 40 }}
                     animate={{ y: 0 }}
