@@ -15,35 +15,52 @@ export default function LandingPage({ onEnter }) {
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.1, filter: 'blur(30px)' }}
-            transition={{ duration: 1, ease: 'circOut' }}
-            className="flex flex-col items-center justify-center w-full h-full bg-white pointer-events-auto"
+            exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col items-center justify-center w-full h-full pointer-events-auto"
         >
-            <form onSubmit={handleSubmit} className="relative w-full max-w-[320px]">
-                <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="EMAIL ADDRESS"
-                    autoFocus
-                    className="w-full px-8 py-3.5 text-[10px] tracking-[0.4em] text-center transition-all bg-gray-50 border border-gray-100 rounded-full shadow-sm outline-none focus:bg-white focus:shadow-md focus:border-navy-light/10 placeholder-gray-400 text-black font-semibold"
-                />
+            <div className="flex flex-col items-center gap-12">
+                {/* OP-style Logo Placeholder */}
+                <motion.div
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-400"
+                >
+                    AH
+                </motion.div>
 
-                {email.includes('@') && (
+                <form onSubmit={handleSubmit} className="flex flex-col items-center gap-8">
+                    {/* OpenPurpose Style Dynamic Pill Input */}
                     <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="absolute top-full mt-6 left-0 w-full text-center"
+                        layout
+                        className="bg-[#EEEEEE] border border-[#EEEEEE] rounded-full px-8 h-[52px] flex items-center transition-all duration-300"
                     >
-                        <button
-                            type="submit"
-                            className="text-[9px] tracking-[0.6em] text-gray-400 hover:text-navy uppercase transition-all hover:tracking-[0.8em]"
-                        >
-                            PRESS [ENTER] TO ENTER
-                        </button>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="EMAIL"
+                            autoFocus
+                            className="bg-transparent border-none text-center uppercase font-mono text-[12px] tracking-[0.15em] text-[#666666] outline-none min-w-[120px]"
+                            style={{ fontFamily: '"JetBrains Mono", monospace' }}
+                        />
                     </motion.div>
-                )}
-            </form>
+
+                    {/* Action Prompt */}
+                    <div className="h-6">
+                        {email.includes('@') && (
+                            <motion.button
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                type="submit"
+                                className="text-[10px] tracking-[0.4em] text-gray-400 hover:text-black uppercase transition-all font-mono"
+                            >
+                                PRESS [ENTER] TO START
+                            </motion.button>
+                        )}
+                    </div>
+                </form>
+            </div>
         </motion.div>
     );
 }

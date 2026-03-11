@@ -1,80 +1,66 @@
 import { useMemo, useRef, useState } from 'react';
-import { useFrame } from '@react-three/fiber';
 import { Text } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import gsap from 'gsap';
 
-export default function ProjectCard({ project, position, stage }) {
+export default function ProjectCard({ project, position, isFocused, anyFocused, onSelect }) {
+    const groupRef = useRef();
     const meshRef = useRef();
     const [hovered, setHovered] = useState(false);
 
-    // CORE TASK: Card Orientation logic
-    // Calculate the rotation needed for cards to face the surface center
     const initialRotation = useMemo(() => {
-        const tempObj = new THREE.Object3D();
-        tempObj.position.copy(position);
-        tempObj.lookAt(0, 0, 0);
-        return tempObj.rotation.clone();
+        const temp = new THREE.Object3D();
+        temp.position.copy(position);
+        temp.lookAt(0, 0, 0);
+        return temp.rotation.clone();
     }, [position]);
 
-    // Smooth Hover Animation
-    const handlePointerOver = () => {
-        setHovered(true);
-        // GSAP or Framer-motion-3d for scale + translation
-        gsap.to(meshRef.current.scale, { x: 1.15, y: 1.15, z: 1.15, duration: 0.3, ease: 'power2.out' });
-    };
-
-    const handlePointerOut = () => {
-        setHovered(false);
-        gsap.to(meshRef.current.scale, { x: 1, y: 1, z: 1, duration: 0.4, ease: 'expo.out' });
-    };
+    // Hover: subtle Z-approach
+    useFrame(() => {
+        if (!meshRef.current) return;
+        const target = hovered ? 0.25 : 0;
+        meshRef.current.position.z = THREE.MathUtils.lerp(
+            meshRef.current.position.z, target, 0.08
+        );
+    });
 
     return (
-        <group position={position} rotation={initialRotation}>
+        <group ref={groupRef} position={position} rotation={initialRotation}>
             <mesh
                 ref={meshRef}
-                onPointerOver={handlePointerOver}
-                onPointerOut={handlePointerOut}
-                onPointerDown={() => console.log('Selection:', project.title)}
+                onClick={(e) => { e.stopPropagation(); onSelect(); }}
+                onPointerOver={() => { setHovered(true); document.body.style.cursor = 'pointer'; }}
+                onPointerOut={() => { setHovered(false); document.body.style.cursor = 'auto'; }}
+                frustumCulled={false}
             >
-                <planeGeometry args={[1, 0.6]} />
+                <planeGeometry args={[1, 1.4]} />
                 <meshStandardMaterial
-                    color="white"
+                    color="#FFFFFF"
+                    transparent
+                    opacity={anyFocused && !isFocused ? 0.3 : 1}
                     roughness={0.1}
                     metalness={0.05}
                     side={THREE.DoubleSide}
                 />
-
-                {/* Core Project Text */}
+                <mesh position={[0, 0, -0.005]}>
+                    <planeGeometry args={[1.02, 1.42]} />
+                    <meshBasicMaterial color="#002147" transparent opacity={0.18} />
+                </mesh>
                 <Text
-                    position={[0, 0.1, 0.02]}
-                    fontSize={0.04}
-                    color="#888"
-                    anchorX="center"
-                    letterSpacing={0.1}
-                    font="/fonts/Inter-Medium.ttf" // Fallback to system default if font load fails
+                    position={[0, 0.45, 0.01]}
+                    fontSize={0.05} color="#002147"
+                    fontWeight="700" letterSpacing={0.1}
                 >
                     {project.category}
                 </Text>
-
                 <Text
-                    position={[0, -0.05, 0.02]}
-                    fontSize={0.08}
-                    color="black"
-                    fontWeight="bold"
-                    anchorX="center"
-                    font="/fonts/Inter-Bold.ttf"
+                    position={[0, 0, 0.01]}
+                    fontSize={0.1} color="#000000"
+                    fontWeight="900" maxWidth={0.8}
+                    textAlign="center" lineHeight={1.1}
                 >
-                    {project.title}
+                    {project.title.toUpperCase()}
                 </Text>
-
-                {/* Navy Highlight Border on Hover */}
-                {hovered && (
-                    <mesh position={[0, 0, -0.01]}>
-                        <planeGeometry args={[1.05, 0.65]} />
-                        <meshBasicMaterial color="#002147" />
-                    </mesh>
-                )}
             </mesh>
         </group>
     );
