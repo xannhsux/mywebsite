@@ -3,13 +3,13 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 /**
- * Canvas texture for a single "CREATING" label used by sprites.
- * Sprites always face the camera → text is always upright.
+ * Canvas texture with two "CREATING" words placed sequentially,
+ * so they follow each other like a train along the tube surface.
  */
 function createTextTexture() {
     const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 64;
+    canvas.width = 2048;
+    canvas.height = 256;
     const ctx = canvas.getContext('2d');
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -17,9 +17,14 @@ function createTextTexture() {
     ctx.font = 'bold 32px "Inter", "Helvetica Neue", Arial, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+
+    // Single "CREATING" centered on the texture
     ctx.fillText('CREATING', canvas.width / 2, canvas.height / 2);
 
     const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    texture.repeat.set(1, 1);
     texture.needsUpdate = true;
     return texture;
 }
@@ -27,15 +32,12 @@ function createTextTexture() {
 export default function InfinityAnchor() {
     const groupRef = useRef();
     const meshRef = useRef();
-    const sprite1Ref = useRef();
-    const sprite2Ref = useRef();
-    const tRef = useRef(0);
-
-    const a = 2.5;
+    const textMeshRef = useRef();
 
     // ── Full lemniscate of Bernoulli (single continuous loop) ──
     const curve = useMemo(() => {
         const path = new THREE.Curve();
+        const a = 2.5;
         path.getPoint = (t) => {
             const angle = t * Math.PI * 2;
             const denom = 1 + Math.pow(Math.sin(angle), 2);
@@ -52,24 +54,13 @@ export default function InfinityAnchor() {
 
     const textTexture = useMemo(() => createTextTexture(), []);
 
-    // ── Every frame: face camera + move text sprites along curve ──
+    // ── Every frame: face camera + scroll texture ──
     useFrame(({ camera }) => {
         if (groupRef.current) {
             groupRef.current.rotation.y = camera.rotation.y + Math.PI;
         }
-
-        // Advance two sprites along the curve (opposite sides)
-        tRef.current = (tRef.current + 0.0003) % 1;
-        const t1 = tRef.current;
-        const t2 = (tRef.current + 0.5) % 1;
-
-        if (sprite1Ref.current) {
-            const p = curve.getPoint(t1);
-            sprite1Ref.current.position.set(p.x, p.y, 0.18);
-        }
-        if (sprite2Ref.current) {
-            const p = curve.getPoint(t2);
-            sprite2Ref.current.position.set(p.x, p.y, 0.18);
+        if (textTexture) {
+            textTexture.offset.x += 0.0003;
         }
     });
 
@@ -80,23 +71,16 @@ export default function InfinityAnchor() {
                 <meshBasicMaterial color="#002147" />
             </mesh>
 
-            {/* Text sprites — always face camera, always upright */}
-            <sprite ref={sprite1Ref} scale={[1.6, 0.2, 1]}>
-                <spriteMaterial
+            {/* Text decal — both words flow together along the path */}
+            <mesh ref={textMeshRef} geometry={tubeGeometry}>
+                <meshBasicMaterial
                     map={textTexture}
                     transparent
                     opacity={0.8}
                     depthWrite={false}
+                    side={THREE.FrontSide}
                 />
-            </sprite>
-            <sprite ref={sprite2Ref} scale={[1.6, 0.2, 1]}>
-                <spriteMaterial
-                    map={textTexture}
-                    transparent
-                    opacity={0.8}
-                    depthWrite={false}
-                />
-            </sprite>
+            </mesh>
         </group>
     );
 }

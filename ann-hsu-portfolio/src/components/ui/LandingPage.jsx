@@ -17,19 +17,19 @@ export default function LandingPage({ onEnter }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col items-center justify-center w-full h-full pointer-events-auto bg-white"
+            className="flex flex-col items-center justify-center w-full h-full pointer-events-auto"
         >
             <div className="flex flex-col items-center gap-12">
+                {/* OP-style Logo Placeholder */}
+                <motion.div
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-400"
+                >
+                    AH
+                </motion.div>
+
                 <form onSubmit={handleSubmit} className="flex flex-col items-center gap-8">
-                    {/* Heading */}
-                    <motion.p
-                        initial={{ y: -20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        className="text-[11px] tracking-[0.35em] uppercase font-mono text-gray-400"
-                        style={{ fontFamily: '"JetBrains Mono", monospace' }}
-                    >
-                        Stay tuned
-                    </motion.p>
                     {/* OpenPurpose Style Dynamic Pill Input */}
                     <motion.div
                         layout

@@ -5,53 +5,25 @@ import * as THREE from 'three';
 import ProjectCard from './ProjectCard';
 import InfinityAnchor from './InfinityAnchor';
 
-// ── Rich project data ──
-const PROJECTS = [
-    {
-        id: 0, title: 'Aero Logic', category: 'SYSTEMS',
-        desc: 'A distributed flight control system built with Rust and real-time telemetry. Handles concurrent sensor data streams with sub-millisecond latency.',
-        achievement: 'Reduced telemetry latency by 94%, handling 12K concurrent sensor feeds in production.',
-        tech: ['Rust', 'gRPC', 'Redis', 'Docker'],
-    },
-    {
-        id: 1, title: 'Cipher Core', category: 'DATA SCIENCE',
-        desc: 'End-to-end encrypted data pipeline for sensitive financial analytics. Features zero-knowledge proofs and homomorphic encryption.',
-        achievement: 'Processed $2.8B in encrypted financial transactions with zero data breaches.',
-        tech: ['Python', 'PySpark', 'AWS', 'Crypto'],
-    },
-    {
-        id: 2, title: 'Genesis ML', category: 'DESIGN SYSTEM',
-        desc: 'A machine learning framework with visual model builder. Drag-and-drop neural network architecture design with real-time training visualization.',
-        achievement: 'Used by 1,200+ researchers. Cut model prototyping time by 60%.',
-        tech: ['PyTorch', 'React', 'D3.js', 'WebGL'],
-    },
-    {
-        id: 3, title: 'Vision Lab', category: 'AI LAB',
-        desc: 'Computer vision platform for real-time object detection and scene understanding. Processes 60fps video feeds with custom YOLO variants.',
-        achievement: 'Achieved 97.2% mAP on custom benchmarks at 60fps inference speed.',
-        tech: ['OpenCV', 'TensorRT', 'CUDA', 'FastAPI'],
-    },
-    {
-        id: 4, title: 'Neural Flow', category: 'SYSTEMS',
-        desc: 'Interactive 3D neural network visualizer. Explore model architectures, watch activations propagate, and debug training in real time.',
-        achievement: 'Featured in TensorFlow Dev Summit. 3K+ GitHub stars.',
-        tech: ['Three.js', 'TF.js', 'WebGL', 'WASM'],
-    },
-    {
-        id: 5, title: 'Aether UI', category: 'DATA SCIENCE',
-        desc: 'Open-source design system with 40+ accessible components. Features glassmorphism, fluid animations, and full dark mode support.',
-        achievement: 'Adopted by 200+ teams. 98/100 Lighthouse accessibility score.',
-        tech: ['React', 'Storybook', 'CSS', 'A11y'],
-    },
+// ── Real project data ──
+const PROJECT_DATA = [
+    { title: 'Fashion AI', category: 'AI · PRODUCT', desc: 'AI-powered fashion app with competitive analysis and user validation.', achievement: '88% conversion — 44/50 signed up for early testing.', tech: ['Python', 'React', 'AI/ML', 'Figma'] },
+    { title: 'Knowledge Retrieval', category: 'AI · ML', desc: 'Recommendation engine using vector embeddings and cosine similarity.', achievement: 'Low-latency retrieval from large-scale unstructured data.', tech: ['PyTorch', 'FAISS', 'React', 'Python'] },
+    { title: 'GeoData Vis', category: 'DATA VIS', desc: 'Interactive visualization integrating datasets with geospatial context.', achievement: 'Synchronized 3D views with real-time filtering.', tech: ['Vue', 'Three.js', 'Node.js', 'REST'] },
+    { title: 'Stock Portfolio', category: 'DATA SCIENCE', desc: 'Python + SQL analytics for real-world financial market data.', achievement: 'Automated pipeline from Yahoo Finance API.', tech: ['Python', 'SQL', 'Pandas'] },
+    { title: 'Travel + LLM', category: 'FULL STACK', desc: 'Travel platform with LLM translating natural language to DB queries.', achievement: 'NL search across dual SQL/NoSQL, deployed with Docker.', tech: ['React', 'Node.js', 'MySQL', 'MongoDB', 'OpenAI'] },
+    { title: 'NFC Reader', category: 'MOBILE', desc: 'iOS/Android app for NFC-based product authenticity verification.', achievement: '>99% scan accuracy across 200+ tested products.', tech: ['Swift', 'AWS Lambda', 'DynamoDB'] },
+    { title: 'Medical Image AI', category: 'AI · ML', desc: 'Transfer learning fine-tuning VGG-16 for kidney CT classification.', achievement: '98.96% accuracy — 30% over baseline. Published.', tech: ['PyTorch', 'VGG-16', 'NumPy'] },
+    { title: 'Emotional Relief', category: 'PRODUCT · UX', desc: 'AI emotional wellness app through product discovery and iterative design.', achievement: '85%+ willingness to pay. 100% recommendation intent.', tech: ['Java', 'JavaScript', 'Figma'] },
 ];
 
-// Build 120 cards from the 6 projects
-const ALL_PROJECTS = Array.from({ length: 120 }, (_, i) => ({
-    ...PROJECTS[i % PROJECTS.length],
+// Expand to 120 cards cycling through the 8 real projects
+const PROJECTS = Array.from({ length: 120 }, (_, i) => ({
     id: i,
+    ...PROJECT_DATA[i % PROJECT_DATA.length],
 }));
 
-// ── Fibonacci sphere distribution with inner‑radius gap ──
+// ── Fibonacci sphere distribution with inner-radius gap ──
 function fibonacciSphere(count, radius, innerRadiusFactor = 0.55) {
     const points = [];
     const goldenAngle = Math.PI * (3 - Math.sqrt(5));
@@ -75,9 +47,9 @@ export default function Experience({ stage, selectedProject, onSelect, onTransit
     const radius = 14;
 
     const items = useMemo(() => {
-        const positions = fibonacciSphere(ALL_PROJECTS.length, radius, 0.5);
+        const positions = fibonacciSphere(PROJECTS.length, radius, 0.5);
         return positions.map((pos, idx) => ({
-            ...ALL_PROJECTS[idx % ALL_PROJECTS.length],
+            ...PROJECTS[idx % PROJECTS.length],
             id: idx,
             pos,
         }));
@@ -93,7 +65,7 @@ export default function Experience({ stage, selectedProject, onSelect, onTransit
         camera.lookAt(0, 0, 0);
     }, [camera]);
 
-    // ── Auto-drift (pauses when card focused) + lookAt ──
+    // ── Auto-drift + lookAt ──
     useFrame(() => {
         if (worldGroupRef.current && selectedProject === null) {
             worldGroupRef.current.rotation.y += 0.0003;
@@ -101,14 +73,7 @@ export default function Experience({ stage, selectedProject, onSelect, onTransit
         camera.lookAt(0, 0, 0);
     });
 
-    // ── Disable orbit when focused ──
-    useEffect(() => {
-        if (controlsRef.current) {
-            controlsRef.current.enabled = selectedProject === null;
-        }
-    }, [selectedProject]);
-
-    // ── Scroll‑driven About transition ──
+    // ── Scroll-driven About transition ──
     useEffect(() => {
         if (stage !== 'journey') return;
         let accumulated = 0;
@@ -136,11 +101,6 @@ export default function Experience({ stage, selectedProject, onSelect, onTransit
         return () => window.removeEventListener('wheel', onWheel);
     }, [stage, selectedProject, camera, onTransitionToAbout]);
 
-    // ── Click empty space → deselect ──
-    const handleMiss = useCallback(() => {
-        if (selectedProject !== null) onSelect(null);
-    }, [selectedProject, onSelect]);
-
     return (
         <>
             <ambientLight intensity={2.2} />
@@ -158,9 +118,11 @@ export default function Experience({ stage, selectedProject, onSelect, onTransit
                 rotateSpeed={0.5}
             />
 
-            {stage !== 'landing' && stage !== 'about' && <InfinityAnchor />}
+            {stage !== 'landing' && stage !== 'about' && (
+                <InfinityAnchor />
+            )}
 
-            <group ref={worldGroupRef} onPointerMissed={handleMiss}>
+            <group ref={worldGroupRef} position={[0, 0, 0]}>
                 {items.map((item) => (
                     <ProjectCard
                         key={item.id}
@@ -168,7 +130,7 @@ export default function Experience({ stage, selectedProject, onSelect, onTransit
                         position={item.pos}
                         isFocused={selectedProject === item.id}
                         anyFocused={selectedProject !== null}
-                        onSelect={() => onSelect(selectedProject === item.id ? null : item.id)}
+                        onSelect={() => onSelect(item.id)}
                     />
                 ))}
             </group>

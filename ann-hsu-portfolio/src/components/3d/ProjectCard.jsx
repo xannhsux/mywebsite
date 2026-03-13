@@ -1,21 +1,138 @@
-import { useMemo, useRef, useEffect, useState } from 'react';
-import { Text, Html } from '@react-three/drei';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useMemo, useRef, useState, useEffect } from 'react';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import gsap from 'gsap';
 
-// Reusable vectors
-const _worldPos = new THREE.Vector3();
-const _camDir = new THREE.Vector3();
+// ── Cover images from picsum (deterministic seeds) ──
+const COVER_SEEDS = [100, 237, 342, 433, 500, 566];
+
+// ── Canvas texture: full-bleed image + glassmorphism overlay + white text ──
+function createCardTexture(project, coverImage) {
+    const w = 512, h = 716; // ~1:1.4 aspect
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d');
+    const r = 48; // 32px at display scale ≈ 48px on 512-wide canvas
+
+    // Rounded rect clip
+    ctx.beginPath();
+    ctx.moveTo(r, 0); ctx.lineTo(w - r, 0);
+    ctx.quadraticCurveTo(w, 0, w, r);
+    ctx.lineTo(w, h - r); ctx.quadraticCurveTo(w, h, w - r, h);
+    ctx.lineTo(r, h); ctx.quadraticCurveTo(0, h, 0, h - r);
+    ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0);
+    ctx.closePath();
+    ctx.clip();
+
+    // Full-bleed cover image
+    if (coverImage && coverImage.complete && coverImage.naturalWidth > 0) {
+        const iw = coverImage.naturalWidth, ih = coverImage.naturalHeight;
+        const scale = Math.max(w / iw, h / ih);
+        const sw = iw * scale, sh = ih * scale;
+        ctx.drawImage(coverImage, (w - sw) / 2, (h - sh) / 2, sw, sh);
+    } else {
+        // Gradient fallback
+        const grad = ctx.createLinearGradient(0, 0, w, h);
+        grad.addColorStop(0, '#e8e8e8');
+        grad.addColorStop(1, '#d0d0d0');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+    }
+
+    // Subtle inner glow (light vignette)
+    const glow = ctx.createRadialGradient(w / 2, h / 2, w * 0.2, w / 2, h / 2, w * 0.8);
+    glow.addColorStop(0, 'rgba(255,255,255,0.08)');
+    glow.addColorStop(1, 'rgba(0,0,0,0.15)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, w, h);
+
+    // Glassmorphism overlay at bottom ~35%
+    const overlayTop = Math.round(h * 0.62);
+    const overlayH = h - overlayTop;
+
+    // Frosted glass effect: semi-transparent dark gradient
+    const glass = ctx.createLinearGradient(0, overlayTop, 0, h);
+    glass.addColorStop(0, 'rgba(0,0,0,0.0)');
+    glass.addColorStop(0.15, 'rgba(0,0,0,0.35)');
+    glass.addColorStop(1, 'rgba(0,0,0,0.65)');
+    ctx.fillStyle = glass;
+    ctx.fillRect(0, overlayTop, w, overlayH);
+
+    // Thin frosted highlight line at top of glass
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(32, overlayTop + Math.round(overlayH * 0.18));
+    ctx.lineTo(w - 32, overlayTop + Math.round(overlayH * 0.18));
+    ctx.stroke();
+
+    // Category text
+    const textY = overlayTop + Math.round(overlayH * 0.35);
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.font = '500 16px "Inter", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.letterSpacing = '0.1em';
+    ctx.fillText((project.category || '').toUpperCase(), 36, textY);
+
+    // Project name — semi-bold
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '600 30px "Inter", sans-serif';
+    const titleY = textY + 34;
+    const maxW = w - 72;
+    const words = (project.title || '').split(' ');
+    let line = '', y = titleY;
+    words.forEach((word) => {
+        const test = line + (line ? ' ' : '') + word;
+        if (ctx.measureText(test).width > maxW && line) {
+            ctx.fillText(line, 36, y); line = word; y += 36;
+        } else { line = test; }
+    });
+    ctx.fillText(line, 36, y);
+
+    // One-line description — lighter weight
+    if (project.desc) {
+        y += 28;
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.font = '400 16px "Inter", sans-serif';
+        let desc = project.desc;
+        if (ctx.measureText(desc).width > maxW) {
+            while (ctx.measureText(desc + '…').width > maxW && desc.length > 0) desc = desc.slice(0, -1);
+            desc += '…';
+        }
+        ctx.fillText(desc, 36, y);
+    }
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.needsUpdate = true;
+    return tex;
+}
+
+// ── Load a cover image ──
+function loadCoverImage(seed) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = `https://picsum.photos/seed/${seed}/512/716`;
+    });
+}
 
 export default function ProjectCard({ project, position, isFocused, anyFocused, onSelect }) {
     const groupRef = useRef();
     const meshRef = useRef();
+    const matRef = useRef();
     const [hovered, setHovered] = useState(false);
-    const tweenRef = useRef([]);  // store active GSAP tweens
-    const { camera } = useThree();
+    const [texture, setTexture] = useState(null);
 
-    // ── Initial rotation: face the origin ──
+    // Load cover image + create texture
+    useEffect(() => {
+        const seed = COVER_SEEDS[project.id % COVER_SEEDS.length];
+        loadCoverImage(seed).then((img) => {
+            const tex = createCardTexture(project, img);
+            setTexture(tex);
+        });
+    }, [project]);
+
     const initialRotation = useMemo(() => {
         const temp = new THREE.Object3D();
         temp.position.copy(position);
@@ -23,79 +140,16 @@ export default function ProjectCard({ project, position, isFocused, anyFocused, 
         return temp.rotation.clone();
     }, [position]);
 
-    // Store initial values for GSAP to tween back to
-    const initialState = useMemo(() => ({
-        px: position.x, py: position.y, pz: position.z,
-        rx: initialRotation.x, ry: initialRotation.y, rz: initialRotation.z,
-        sx: 1, sy: 1, sz: 1,
-    }), [position, initialRotation]);
-
-    // ── Focus / Unfocus GSAP animation ──
-    useEffect(() => {
-        if (!groupRef.current) return;
-        const g = groupRef.current;
-
-        // Kill any running tweens
-        tweenRef.current.forEach(t => t.kill());
-        tweenRef.current = [];
-
-        if (isFocused) {
-            // Compute target: 2.5 units in front of camera, in parent-local space
-            const parent = g.parent;
-            if (!parent) return;
-            parent.updateWorldMatrix(true, false);
-
-            // Camera forward direction
-            camera.getWorldDirection(_camDir);
-            // Target world position = camera pos + forward * 2.5
-            _worldPos.copy(camera.position).add(_camDir.clone().multiplyScalar(2.5));
-            // Convert to parent local space
-            const targetLocal = parent.worldToLocal(_worldPos.clone());
-
-            // Compute rotation to face camera in parent-local space
-            const camLocal = parent.worldToLocal(camera.position.clone());
-            const tempObj = new THREE.Object3D();
-            tempObj.position.copy(targetLocal);
-            tempObj.lookAt(camLocal);
-
-            const t1 = gsap.to(g.position, {
-                x: targetLocal.x, y: targetLocal.y, z: targetLocal.z,
-                duration: 1.0, ease: 'expo.out',
-            });
-            const t2 = gsap.to(g.rotation, {
-                x: tempObj.rotation.x, y: tempObj.rotation.y, z: tempObj.rotation.z,
-                duration: 1.0, ease: 'expo.out',
-            });
-            const t3 = gsap.to(g.scale, {
-                x: 2.8, y: 2.8, z: 2.8,
-                duration: 1.0, ease: 'expo.out',
-            });
-            tweenRef.current = [t1, t2, t3];
-        } else {
-            // Return to Fibonacci shell position
-            const t1 = gsap.to(g.position, {
-                x: initialState.px, y: initialState.py, z: initialState.pz,
-                duration: 0.8, ease: 'power3.inOut',
-            });
-            const t2 = gsap.to(g.rotation, {
-                x: initialState.rx, y: initialState.ry, z: initialState.rz,
-                duration: 0.8, ease: 'power3.inOut',
-            });
-            const t3 = gsap.to(g.scale, {
-                x: 1, y: 1, z: 1,
-                duration: 0.8, ease: 'power3.inOut',
-            });
-            tweenRef.current = [t1, t2, t3];
-        }
-    }, [isFocused, camera, initialState]);
-
-    // ── Hover: subtle Z-approach ──
+    // Hover: subtle Z-approach + scale
     useFrame(() => {
-        if (!meshRef.current || isFocused) return;
-        const target = hovered ? 0.25 : 0;
+        if (!meshRef.current) return;
+        const targetZ = hovered ? 0.3 : 0;
         meshRef.current.position.z = THREE.MathUtils.lerp(
-            meshRef.current.position.z, target, 0.08
+            meshRef.current.position.z, targetZ, 0.08
         );
+        const targetScale = hovered ? 1.06 : 1;
+        meshRef.current.scale.x = THREE.MathUtils.lerp(meshRef.current.scale.x, targetScale, 0.1);
+        meshRef.current.scale.y = THREE.MathUtils.lerp(meshRef.current.scale.y, targetScale, 0.1);
     });
 
     return (
@@ -107,132 +161,17 @@ export default function ProjectCard({ project, position, isFocused, anyFocused, 
                 onPointerOut={() => { setHovered(false); document.body.style.cursor = 'auto'; }}
                 frustumCulled={false}
             >
-                {/* Portrait card 1.0 × 1.4 */}
-                <planeGeometry args={[1, 1.4]} />
+                <planeGeometry args={[1.1, 1.54]} />
                 <meshStandardMaterial
-                    color="#FFFFFF"
+                    ref={matRef}
+                    map={texture}
                     transparent
-                    opacity={anyFocused && !isFocused ? 0.1 : 1}
-                    roughness={0.1}
-                    metalness={0.05}
+                    opacity={anyFocused && !isFocused ? 0.25 : 1}
+                    roughness={0.15}
+                    metalness={0}
                     side={THREE.DoubleSide}
                 />
-
-                {/* Border */}
-                <mesh position={[0, 0, -0.005]}>
-                    <planeGeometry args={[1.02, 1.42]} />
-                    <meshBasicMaterial
-                        color="#002147"
-                        transparent
-                        opacity={anyFocused && !isFocused ? 0.02 : 0.15}
-                    />
-                </mesh>
-
-                {/* Category (always visible) */}
-                <Text
-                    position={[0, 0.45, 0.01]}
-                    fontSize={0.05} color="#002147"
-                    fontWeight="700" letterSpacing={0.1}
-                >
-                    {project.category}
-                </Text>
-
-                {/* Title (always visible) */}
-                <Text
-                    position={[0, 0, 0.01]}
-                    fontSize={0.1} color="#000000"
-                    fontWeight="900" maxWidth={0.8}
-                    textAlign="center" lineHeight={1.1}
-                >
-                    {project.title.toUpperCase()}
-                </Text>
             </mesh>
-
-            {/* ── Rich HTML content overlay (only when focused) ── */}
-            {isFocused && (
-                <Html
-                    position={[0, 0, 0.02]}
-                    center
-                    distanceFactor={1.5}
-                    style={{ pointerEvents: 'none', userSelect: 'none' }}
-                >
-                    <div style={{
-                        width: '320px',
-                        fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
-                        color: '#001A3A',
-                        textAlign: 'left',
-                        padding: '24px',
-                    }}>
-                        {/* Category */}
-                        <div style={{
-                            fontSize: '9px',
-                            letterSpacing: '0.35em',
-                            fontWeight: 700,
-                            textTransform: 'uppercase',
-                            opacity: 0.4,
-                            marginBottom: '8px',
-                            fontFamily: '"JetBrains Mono", monospace',
-                        }}>
-                            {project.category}
-                        </div>
-
-                        {/* Title */}
-                        <div style={{
-                            fontSize: '22px',
-                            fontWeight: 900,
-                            letterSpacing: '-0.02em',
-                            marginBottom: '14px',
-                            lineHeight: 1.15,
-                        }}>
-                            {project.title}
-                        </div>
-
-                        {/* Description */}
-                        <div style={{
-                            fontSize: '11px',
-                            lineHeight: 1.7,
-                            opacity: 0.55,
-                            marginBottom: '16px',
-                        }}>
-                            {project.desc}
-                        </div>
-
-                        {/* Achievement */}
-                        <div style={{
-                            fontSize: '11px',
-                            lineHeight: 1.6,
-                            fontWeight: 600,
-                            color: '#002147',
-                            opacity: 0.75,
-                            marginBottom: '18px',
-                            paddingLeft: '10px',
-                            borderLeft: '2px solid #00214730',
-                        }}>
-                            {project.achievement}
-                        </div>
-
-                        {/* Tech Stack */}
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                            {project.tech.map((t) => (
-                                <span key={t} style={{
-                                    fontSize: '9px',
-                                    fontWeight: 500,
-                                    letterSpacing: '0.08em',
-                                    textTransform: 'uppercase',
-                                    padding: '4px 10px',
-                                    borderRadius: '100px',
-                                    background: '#0021470A',
-                                    color: '#00214780',
-                                    border: '1px solid #00214712',
-                                    fontFamily: '"JetBrains Mono", monospace',
-                                }}>
-                                    {t}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                </Html>
-            )}
         </group>
     );
 }
