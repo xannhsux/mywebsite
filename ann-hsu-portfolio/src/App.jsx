@@ -83,6 +83,45 @@ export default function App() {
     }, [stage]);
 
     const detail = selectedProject !== null ? getProjectDetail(selectedProject) : null;
+    const collapseTimerRef = useRef(null);
+    const isCollapsingRef = useRef(false);
+
+
+    const collapse = useCallback(() => {
+        if (isCollapsingRef.current) return;
+        isCollapsingRef.current = true;
+        if (collapseTimerRef.current) {
+            clearTimeout(collapseTimerRef.current);
+            collapseTimerRef.current = null;
+        }
+        setSelectedProject(null);
+    }, []);
+
+    // Reset collapsing flag when card opens
+    useEffect(() => {
+        if (selectedProject !== null) {
+            isCollapsingRef.current = false;
+        }
+    }, [selectedProject]);
+
+    const handleCardMouseLeave = useCallback(() => {
+        if (isCollapsingRef.current) return;
+        collapseTimerRef.current = setTimeout(collapse, 150);
+    }, [collapse]);
+
+    const handleCardMouseEnter = useCallback(() => {
+        if (collapseTimerRef.current) {
+            clearTimeout(collapseTimerRef.current);
+            collapseTimerRef.current = null;
+        }
+    }, []);
+
+    // Clean up timer on unmount
+    useEffect(() => {
+        return () => {
+            if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
+        };
+    }, []);
 
     return (
         <main className="fixed inset-0 w-full h-full bg-[#FFFFFF] select-none overflow-hidden font-sans">
@@ -131,7 +170,7 @@ export default function App() {
             <AnimatePresence>
                 {detail && (
                     <>
-                        {/* Click-outside dismiss (no dark overlay per spec) */}
+                        {/* Click-outside dismiss backdrop */}
                         <motion.div
                             key="backdrop"
                             initial={{ opacity: 0 }}
@@ -139,7 +178,7 @@ export default function App() {
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.3 }}
                             className="fixed inset-0 z-40"
-                            onClick={() => setSelectedProject(null)}
+                            onClick={collapse}
                         />
 
                         {/* Detail Card */}
@@ -166,6 +205,8 @@ export default function App() {
                                     overflow-y-auto
                                     cursor-default
                                 "
+                                onMouseLeave={handleCardMouseLeave}
+                                onMouseEnter={handleCardMouseEnter}
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 {/* Header section */}
@@ -239,20 +280,8 @@ export default function App() {
                                     </div>
                                 </div>
 
-                                {/* Close button */}
-                                <div className="px-10 pb-8 pt-2">
-                                    <button
-                                        onClick={() => setSelectedProject(null)}
-                                        className="
-                                            text-[10px] tracking-[0.25em] uppercase font-medium
-                                            text-[#BBB] hover:text-[#4A6FA5]
-                                            transition-colors duration-200
-                                        "
-                                        style={{ fontFamily: '"DM Mono", "JetBrains Mono", monospace' }}
-                                    >
-                                        ← Close
-                                    </button>
-                                </div>
+                                {/* Bottom padding */}
+                                <div className="pb-8" />
                             </div>
                         </motion.div>
                     </>

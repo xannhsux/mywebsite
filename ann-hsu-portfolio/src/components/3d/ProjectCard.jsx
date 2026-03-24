@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useEffect } from 'react';
+import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -45,61 +45,52 @@ function createCardTexture(project, coverImage) {
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, w, h);
 
-    // Glassmorphism overlay at bottom ~35%
-    const overlayTop = Math.round(h * 0.62);
-    const overlayH = h - overlayTop;
+    // Dark overlay for text legibility
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    ctx.fillRect(0, 0, w, h);
 
-    // Frosted glass effect: semi-transparent dark gradient
-    const glass = ctx.createLinearGradient(0, overlayTop, 0, h);
-    glass.addColorStop(0, 'rgba(0,0,0,0.0)');
-    glass.addColorStop(0.15, 'rgba(0,0,0,0.35)');
-    glass.addColorStop(1, 'rgba(0,0,0,0.65)');
-    ctx.fillStyle = glass;
-    ctx.fillRect(0, overlayTop, w, overlayH);
-
-    // Thin frosted highlight line at top of glass
-    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(32, overlayTop + Math.round(overlayH * 0.18));
-    ctx.lineTo(w - 32, overlayTop + Math.round(overlayH * 0.18));
-    ctx.stroke();
-
-    // Category text
-    const textY = overlayTop + Math.round(overlayH * 0.35);
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    ctx.font = '500 16px "Inter", sans-serif';
-    ctx.textAlign = 'left';
-    ctx.letterSpacing = '0.1em';
-    ctx.fillText((project.category || '').toUpperCase(), 36, textY);
-
-    // Project name — semi-bold
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '600 30px "Inter", sans-serif';
-    const titleY = textY + 34;
-    const maxW = w - 72;
-    const words = (project.title || '').split(' ');
-    let line = '', y = titleY;
-    words.forEach((word) => {
-        const test = line + (line ? ' ' : '') + word;
-        if (ctx.measureText(test).width > maxW && line) {
-            ctx.fillText(line, 36, y); line = word; y += 36;
-        } else { line = test; }
-    });
-    ctx.fillText(line, 36, y);
-
-    // One-line description — lighter weight
-    if (project.desc) {
-        y += 28;
-        ctx.fillStyle = 'rgba(255,255,255,0.6)';
-        ctx.font = '400 16px "Inter", sans-serif';
-        let desc = project.desc;
-        if (ctx.measureText(desc).width > maxW) {
-            while (ctx.measureText(desc + '…').width > maxW && desc.length > 0) desc = desc.slice(0, -1);
-            desc += '…';
+    // Title — scaled to fill the entire card
+    const titleText = (project.title || '').toUpperCase();
+    const titlePadding = 40;
+    const maxW = w - titlePadding * 2;
+    // Split into words and try to fit as large as possible
+    const words = titleText.split(' ');
+    // Try fitting in 1 line first, then 2, then 3...
+    let bestFontSize = 24;
+    let bestLines = [titleText];
+    for (let numLines = 1; numLines <= Math.min(words.length, 4); numLines++) {
+        // Distribute words across lines
+        const lines = [];
+        const wordsPerLine = Math.ceil(words.length / numLines);
+        for (let i = 0; i < words.length; i += wordsPerLine) {
+            lines.push(words.slice(i, i + wordsPerLine).join(' '));
         }
-        ctx.fillText(desc, 36, y);
+        // Find max font size where all lines fit
+        let fs = 200;
+        ctx.font = `800 ${fs}px "Inter", sans-serif`;
+        while (fs > 24) {
+            ctx.font = `800 ${fs}px "Inter", sans-serif`;
+            const allFit = lines.every(l => ctx.measureText(l).width <= maxW);
+            if (allFit) break;
+            fs -= 2;
+        }
+        // Check total height fits card
+        const lineHeight = fs * 1.1;
+        const totalH = lineHeight * lines.length;
+        if (totalH <= h - titlePadding * 2 && fs > bestFontSize) {
+            bestFontSize = fs;
+            bestLines = lines;
+        }
     }
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `800 ${bestFontSize}px "Inter", sans-serif`;
+    ctx.textAlign = 'left';
+    const lineHeight = bestFontSize * 1.1;
+    const totalTextH = lineHeight * bestLines.length;
+    const startY = (h - totalTextH) / 2 + bestFontSize * 0.85;
+    bestLines.forEach((line, i) => {
+        ctx.fillText(line, titlePadding, startY + i * lineHeight);
+    });
 
     const tex = new THREE.CanvasTexture(c);
     tex.needsUpdate = true;
@@ -123,6 +114,7 @@ export default function ProjectCard({ project, position, isFocused, anyFocused, 
     const matRef = useRef();
     const [hovered, setHovered] = useState(false);
     const [texture, setTexture] = useState(null);
+    const hoverTimer = useRef(null);
 
     // Load cover image + create texture
     useEffect(() => {
@@ -156,12 +148,19 @@ export default function ProjectCard({ project, position, isFocused, anyFocused, 
         <group ref={groupRef} position={position} rotation={initialRotation}>
             <mesh
                 ref={meshRef}
-                onClick={(e) => { e.stopPropagation(); onSelect(); }}
-                onPointerOver={() => { setHovered(true); document.body.style.cursor = 'pointer'; }}
-                onPointerOut={() => { setHovered(false); document.body.style.cursor = 'auto'; }}
+                onPointerOver={() => {
+                    setHovered(true);
+                    document.body.style.cursor = 'pointer';
+                    hoverTimer.current = setTimeout(() => onSelect(), 5);
+                }}
+                onPointerOut={() => {
+                    setHovered(false);
+                    document.body.style.cursor = 'auto';
+                    if (hoverTimer.current) { clearTimeout(hoverTimer.current); hoverTimer.current = null; }
+                }}
                 frustumCulled={false}
             >
-                <planeGeometry args={[1.1, 1.54]} />
+                <planeGeometry args={[1.58, 2.22]} />
                 <meshStandardMaterial
                     ref={matRef}
                     map={texture}

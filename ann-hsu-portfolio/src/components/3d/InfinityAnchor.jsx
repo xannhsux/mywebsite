@@ -65,7 +65,7 @@ export default function InfinityAnchor() {
     });
 
     return (
-        <group ref={groupRef} scale={1.2}>
+        <group ref={groupRef} scale={0.96}>
             {/* Base tube — deep blue matte */}
             <mesh ref={meshRef} geometry={tubeGeometry}>
                 <meshBasicMaterial color="#002147" />
